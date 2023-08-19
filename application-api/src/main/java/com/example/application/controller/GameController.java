@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class GameController {
 
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
-
+    public int counter = 0;
     @PostMapping("/api/game")
     GameInfo newGame(@RequestBody GameInfo game) throws InterruptedException {
         logger.info("Welcome to game api");
-        Thread.sleep(2000);
+        counter++;
+        logger.info("Latest Count: "+ counter);
         return game;
     }
 }

@@ -31,28 +31,28 @@ public class GameService {
     public String getInstance() {
         List<String> activeInstances = instanceProperties.getActiveInstances();
         if (!activeInstances.isEmpty()) {
-            int last_instance = activeInstances.size() - 1;
-            String instance = activeInstances.get(current_count.get());
-            if (current_count.get() == last_instance || current_count.get() >= last_instance) {
-                current_count.set(0);
-                return activeInstances.get(last_instance);
-            }
-            current_count.incrementAndGet();
-            return instance;
+            return activeInstances.get(getCount(activeInstances.size()));
         }
         throw new RuntimeException("No active instance is available.");
     }
 
+    synchronized int getCount(int sizeOfActiveInstances) {
+        if (current_count.get() == sizeOfActiveInstances) {
+            current_count.set(0);
+        }
+        return current_count.getAndIncrement();
+    }
+
     // API call to application instance.
     public GameInfo executeAPI(String instance, GameInfo game) {
-        logger.info("Execute api with instance url: " + instance);
+        logger.debug("Execute api with instance url: " + instance);
         ResponseEntity<GameInfo> response;
         try {
             long startTime = System.currentTimeMillis();
             response = restTemplate.postForEntity(instance + API_URL, game, GameInfo.class);
             long endTime = System.currentTimeMillis();
             long elapsedTime = endTime - startTime;
-            if (elapsedTime > 100) {
+            if (elapsedTime > 3000) {
                 logger.warn("Alert: Application instance url: " + instance + " responding slowly, ElapsedTime:" + elapsedTime);
             }
             return response.getBody();
